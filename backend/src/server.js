@@ -23,8 +23,8 @@ import dashboardRoutes from './routes/dashboard.js';
 import uploadRoutes from './routes/upload.js';
 import healthRoutes from './routes/health.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __dirname;
+try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch { __dirname = process.cwd(); }
 
 const app = express();
 
@@ -97,9 +97,11 @@ app.use(errorHandler);
 const PORT = Number(process.env.PORT) || Number(env.PORT) || 5001;
 const HOST = '0.0.0.0';
 
-app.listen(PORT, HOST, () => {
-  console.log(`[GURI DHIS Server] listening on http://${HOST}:${PORT}`);
-  console.log(`[Environment] ${env.NODE_ENV}`);
-});
+if (!process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.listen(PORT, HOST, () => {
+    console.log(`[GURI DHIS Server] listening on http://${HOST}:${PORT}`);
+    console.log(`[Environment] ${env.NODE_ENV}`);
+  });
+}
 
 export default app;

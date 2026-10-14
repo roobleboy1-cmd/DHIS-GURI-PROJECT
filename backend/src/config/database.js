@@ -5,8 +5,8 @@ import { PGlite } from '@electric-sql/pglite';
 import { env } from './env.js';
 
 const { Pool } = pg;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __dirname;
+try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch { __dirname = process.cwd(); }
 
 const dbDataDir = path.resolve(__dirname, '../../../database/data');
 

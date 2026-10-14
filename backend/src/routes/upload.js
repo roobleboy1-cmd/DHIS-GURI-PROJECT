@@ -8,14 +8,16 @@ import { isCloudinaryConfigured, uploadBufferToCloudinary } from '../config/clou
 import { success, error as sendError } from '../utils/apiResponse.js';
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __dirname;
+try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch { __dirname = process.cwd(); }
 const uploadsDir = path.resolve(__dirname, '../../uploads');
 
-// Ensure local uploads directory exists
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Ensure local uploads directory exists (safely ignored in read-only serverless environments)
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (_) {}
 
 /**
  * POST /api/upload/image
