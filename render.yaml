@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: guridhis-backend
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: guridhis-db
+          property: connectionString
+      - key: CLOUDINARY_CLOUD_NAME
+        value: vzhzosef
+      - key: CLOUDINARY_API_KEY
+        value: 442249531596166
+      - key: CLOUDINARY_API_SECRET
+        value: WK0wynWjTBMSymTmx9fPLwFlceI
+
+databases:
+  - name: guridhis-db
+    plan: free
+    region: frankfurt
+    databaseName: guridhis
+    user: guridhis_user
