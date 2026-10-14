@@ -1,0 +1,36 @@
+{
+  "name": "guri-dhis-backend",
+  "version": "1.0.0",
+  "description": "GURI DHIS House Construction Management System Backend API",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "db:init": "node src/config/initDb.js",
+    "db:online-init": "node src/config/initOnlineDb.js"
+  },
+  "keywords": [
+    "express",
+    "postgresql",
+    "construction-management",
+    "guri-dhis"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.9",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.4.0",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
