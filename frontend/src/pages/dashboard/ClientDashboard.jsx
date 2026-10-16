@@ -3,19 +3,23 @@ import { Link } from 'react-router-dom';
 import {
   FolderKanban,
   ClipboardList,
-  CreditCard,
   Building2,
   ArrowRight,
   AlertCircle,
   PlusCircle,
-  MapPin
+  Compass,
+  FileCheck2,
+  CheckCircle2,
 } from 'lucide-react';
 import api from '../../api/axios';
 import StatCard from '../../components/common/StatCard';
 import DataTable from '../../components/common/DataTable';
 import StatusBadge from '../../components/common/StatusBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import WelcomeBanner from '../../components/dashboard/WelcomeBanner';
+import ProjectStatusDonutChart from '../../components/dashboard/ProjectStatusDonutChart';
+import ProjectProgressBarChart from '../../components/dashboard/ProjectProgressBarChart';
+import { formatDate } from '../../utils/helpers';
 
 const ClientDashboard = () => {
   const [data, setData] = useState(null);
@@ -39,9 +43,9 @@ const ClientDashboard = () => {
 
   if (error) {
     return (
-      <div className="p-6 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-center gap-3">
-        <AlertCircle className="w-5 h-5" />
-        <span>Failed to load your project data: {error}</span>
+      <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 flex items-center gap-3 shadow-xs">
+        <AlertCircle className="w-5 h-5 shrink-0" />
+        <span className="text-sm font-semibold">Failed to load your project data: {error}</span>
       </div>
     );
   }
@@ -52,8 +56,8 @@ const ClientDashboard = () => {
       key: 'title',
       render: (row) => (
         <div>
-          <p className="font-bold text-slate-800">{row.title}</p>
-          <p className="text-[11px] text-slate-400">Lead: {row.engineer_name || 'Assigned Engineer'}</p>
+          <p className="font-bold text-slate-800 text-sm">{row.title}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Lead: {row.engineer_name || 'Assigned Site Engineer'}</p>
         </div>
       ),
     },
@@ -63,133 +67,166 @@ const ClientDashboard = () => {
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
-      header: 'Site Progress',
+      header: 'Construction Completion',
       key: 'progress_percentage',
-      render: (row) => (
-        <div className="w-32 space-y-1">
-          <div className="flex justify-between text-[11px] font-semibold text-slate-600">
-            <span>{row.progress_percentage || 0}% Complete</span>
+      render: (row) => {
+        const pct = Math.min(100, Math.max(0, Number(row.progress_percentage) || 0));
+        return (
+          <div className="w-36 space-y-1">
+            <div className="flex justify-between text-[11px] font-bold text-slate-700">
+              <span>{pct}%</span>
+              <span className="text-[10px] text-emerald-600 font-semibold">
+                {pct >= 100 ? 'Completed' : 'On Track'}
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/50 p-0.5">
+              <div
+                className="bg-gradient-to-r from-[#123C69] via-orange-500 to-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-emerald-500 h-1.5 rounded-full"
-              style={{ width: `${row.progress_percentage || 0}%` }}
-            />
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      header: 'Last Update',
+      header: 'Last Site Update',
       key: 'updated_at',
-      render: (row) => formatDate(row.updated_at),
+      render: (row) => <span className="text-xs text-slate-500">{formatDate(row.updated_at)}</span>,
     },
     {
-      header: 'Action',
+      header: 'Workspace',
       key: 'action',
       render: (row) => (
         <Link
           to={`/projects/${row.id}`}
-          className="text-xs font-bold text-[#123c69] hover:text-orange-600 inline-flex items-center gap-1"
+          className="text-xs font-bold text-[#123C69] hover:text-orange-600 inline-flex items-center gap-1 transition-colors group"
         >
-          Track Site <ArrowRight className="w-3.5 h-3.5" />
+          <span>Track Site</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       ),
     },
   ];
 
-  const totalPayments = data?.payments?.by_status?.reduce(
-    (sum, p) => sum + Number(p.total_amount || 0),
-    0
-  ) || 0;
+  const totalProjects = data?.projects?.total || 0;
+  const totalRequests = data?.requests?.total || 0;
+  const activeMilestones = data?.recent_projects?.length || 0;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Property Owner Portal</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Track your home construction phases, review certified progress logs, and check payments.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/houses"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-[#123c69] border border-slate-200 hover:bg-slate-50 transition-colors"
-          >
-            <Building2 className="w-4 h-4 text-orange-500" />
-            Explore Designs
-          </Link>
-          <Link
-            to="/requests"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#123c69] text-white hover:bg-[#1a4f8a] transition-colors"
-          >
-            <PlusCircle className="w-4 h-4 text-orange-300" />
-            New Construction Request
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* 1. Welcome Banner */}
+      <WelcomeBanner
+        subtitle="Monitor your turnkey home construction milestones, review verified engineering drawings, and track ground build progress."
+        actions={
+          <>
+            <Link
+              to="/houses"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-xs transition-colors shadow-xs"
+            >
+              <Compass className="w-4 h-4 text-orange-300" />
+              <span>Browse Catalog</span>
+            </Link>
+            <Link
+              to="/requests"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>New Request</span>
+            </Link>
+          </>
+        }
+      />
 
-      {/* KPI Overview */}
+      {/* 2. Key Metrics Summary (Zero financial / payment cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
-          title="Active Projects"
-          value={data?.projects?.total || 0}
+          title="Commissioned Projects"
+          value={totalProjects}
           icon={FolderKanban}
           color="blue"
-          subtitle="Sites under construction"
+          subtitle="Residential building sites"
         />
         <StatCard
-          title="My Requests"
-          value={data?.requests?.total || 0}
+          title="Submitted Requests"
+          value={totalRequests}
           icon={ClipboardList}
           color="orange"
-          subtitle="Proposals submitted"
+          subtitle="Construction inquiries"
         />
         <StatCard
-          title="Total Invoiced"
-          value={formatCurrency(totalPayments)}
-          icon={CreditCard}
-          color="green"
-          subtitle="Logged payment records"
-        />
-        <StatCard
-          title="Milestones"
-          value={data?.recent_projects?.length || 0}
+          title="Active Build Sites"
+          value={activeMilestones}
           icon={Building2}
           color="purple"
-          subtitle="Active builds"
+          subtitle="Sites with ground activity"
+        />
+        <StatCard
+          title="Supervision Status"
+          value={totalProjects > 0 ? "Active" : "None"}
+          icon={CheckCircle2}
+          color="green"
+          subtitle="Engineer inspection active"
         />
       </div>
 
-      {/* Projects in Progress */}
+      {/* 3. Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5 flex flex-col">
+          <ProjectStatusDonutChart
+            data={data?.projects?.by_status || []}
+            title="My Projects Status"
+            subtitle="Phases of your residential constructions"
+          />
+        </div>
+        <div className="lg:col-span-7 flex flex-col">
+          <ProjectProgressBarChart
+            projects={data?.recent_projects || []}
+            title="Construction Progress Tracker"
+            subtitle="Live stage completion of your properties"
+          />
+        </div>
+      </div>
+
+      {/* 4. Projects Table */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-slate-800">My Construction Projects</h3>
-          <Link to="/projects" className="text-xs font-bold text-[#123c69] hover:underline flex items-center gap-1">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+              <FileCheck2 className="w-4.5 h-4.5 text-[#123C69]" />
+              My Construction Sites
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">Direct oversight of your commissioned residential builds</p>
+          </div>
+          <Link
+            to="/projects"
+            className="text-xs font-bold text-[#123C69] hover:text-orange-600 transition-colors inline-flex items-center gap-1"
+          >
             All Projects <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <DataTable
-          columns={projectColumns}
-          data={data?.recent_projects || []}
-          emptyMessage="You have not commissioned any construction projects yet."
-        />
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <DataTable
+            columns={projectColumns}
+            data={data?.recent_projects || []}
+            emptyMessage="You have not commissioned any construction projects yet."
+          />
+        </div>
       </div>
 
-      {/* Quick Action Prompt if no active projects */}
+      {/* 5. Quick Action Prompt when no active projects */}
       {(!data?.recent_projects || data.recent_projects.length === 0) && (
-        <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-2xl border border-blue-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-blue-50/80 to-orange-50/80 rounded-2xl border border-blue-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
           <div className="space-y-1 text-center sm:text-left">
-            <h4 className="text-sm font-bold text-[#123c69]">Ready to start building your residence?</h4>
-            <p className="text-xs text-slate-500">
-              Browse our catalog of modern floor plans or connect with an engineer to begin site planning.
+            <h4 className="text-sm font-bold text-[#123C69]">Ready to start building your dream home?</h4>
+            <p className="text-xs text-slate-500 max-w-xl">
+              Explore our verified turnkey architectural house catalog or submit a custom construction inquiry to be paired with a certified Somali engineer.
             </p>
           </div>
           <Link
             to="/houses"
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shrink-0"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shrink-0 shadow-md shadow-orange-500/20"
           >
             Explore House Designs
           </Link>
