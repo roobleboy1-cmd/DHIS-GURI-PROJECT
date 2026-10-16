@@ -16,5 +16,20 @@ export default defineConfig({
     port: 4173,
     host: '0.0.0.0',
     allowedHosts: true
+  },
+  build: {
+    target: 'es2020',
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-http': ['axios']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 600
   }
 })

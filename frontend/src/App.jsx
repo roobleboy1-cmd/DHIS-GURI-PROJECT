@@ -1,44 +1,52 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
-// Standalone Auth Pages
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
+// Fast Loading Spinner for Route Suspense
+const PageLoader = () => (
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
-// Public Catalog Pages (Within Dashboard Layout)
-import Houses from './pages/Houses';
-import HouseDetails from './pages/HouseDetails';
-import HouseDesigns from './pages/HouseDesigns';
-import DesignDetails from './pages/DesignDetails';
-import Engineers from './pages/Engineers';
-import EngineerDetails from './pages/EngineerDetails';
+// Standalone Auth Pages (Lazy loaded)
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 
-// Dashboard & Core Operations Pages (Protected)
-import Dashboard from './pages/dashboard/Dashboard';
-import Workers from './pages/Workers';
-import ConstructionRequests from './pages/ConstructionRequests';
-import Projects from './pages/Projects';
-import ProjectDetails from './pages/ProjectDetails';
-import ProjectProgress from './pages/ProjectProgress';
-import ProjectDocuments from './pages/ProjectDocuments';
-import Payments from './pages/Payments';
-import Favorites from './pages/Favorites';
-import Notifications from './pages/Notifications';
-import Reviews from './pages/Reviews';
-import UserProfile from './pages/UserProfile';
+// Public Catalog Pages (Lazy loaded)
+const Houses = lazy(() => import('./pages/Houses'));
+const HouseDetails = lazy(() => import('./pages/HouseDetails'));
+const HouseDesigns = lazy(() => import('./pages/HouseDesigns'));
+const DesignDetails = lazy(() => import('./pages/DesignDetails'));
+const Engineers = lazy(() => import('./pages/Engineers'));
+const EngineerDetails = lazy(() => import('./pages/EngineerDetails'));
 
-// Admin Pages
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminReports from './pages/admin/AdminReports';
+// Dashboard & Core Operations Pages (Lazy loaded)
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Workers = lazy(() => import('./pages/Workers'));
+const ConstructionRequests = lazy(() => import('./pages/ConstructionRequests'));
+const Projects = lazy(() => import('./pages/Projects'));
+const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
+const ProjectProgress = lazy(() => import('./pages/ProjectProgress'));
+const ProjectDocuments = lazy(() => import('./pages/ProjectDocuments'));
+const Payments = lazy(() => import('./pages/Payments'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Reviews = lazy(() => import('./pages/Reviews'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
 
-import NotFound from './pages/NotFound';
+// Admin Pages (Lazy loaded)
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
+
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       {/* Standalone Authentication Pages (Clean center card, no sidebar) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -177,6 +185,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
 

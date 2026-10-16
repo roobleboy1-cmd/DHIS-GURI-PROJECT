@@ -34,8 +34,10 @@ try {
     pool = new Pool({
       connectionString: env.DATABASE_URL,
       ssl: requiresSSL ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 10000,
-      idleTimeoutMillis: 30000,
+      max: 10,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 10000,
+      keepAlive: true,
     });
 
     pool.on('error', (err) => {
