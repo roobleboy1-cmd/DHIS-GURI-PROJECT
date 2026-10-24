@@ -10,17 +10,17 @@ const LoadingSpinner = ({ size = 'md', message = 'Loading...', fullScreen = fals
   const spinner = (
     <div className="flex flex-col items-center justify-center p-6 space-y-3">
       <div
-        className={`${sizeClasses[size] || sizeClasses.md} rounded-full border-slate-200 border-t-primary animate-spin`}
+        className={`${sizeClasses[size] || sizeClasses.md} rounded-full border-slate-200 dark:border-slate-800 border-t-orange-500 animate-spin`}
         role="status"
         aria-label="loading"
       />
-      {message && <p className="text-sm font-medium text-slate-500 animate-pulse">{message}</p>}
+      {message && <p className="text-sm font-medium text-slate-500 dark:text-slate-400 animate-pulse">{message}</p>}
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-xs">
         {spinner}
       </div>
     );
