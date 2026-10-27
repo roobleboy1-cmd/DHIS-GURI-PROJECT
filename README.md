@@ -242,3 +242,5 @@ GURI DHIS waxay leedahay nidaam toos ah oo sawirrada guryaha loogu keydiyo **Clo
 - Parameterized SQL queries preventing SQL injection attacks.
 - Sensitive credentials, hashes, and secrets are excluded from API payloads and git tracking.
 - Payment gateway status honestly identified as manual ledger records until live gateway credentials are provided.
+#   D H I S - G U R I - P R O J E C T  
+ 
