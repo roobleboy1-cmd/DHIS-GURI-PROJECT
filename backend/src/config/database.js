@@ -1,7 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg';
-import { PGlite } from '@electric-sql/pglite';
 import { env } from './env.js';
 
 const { Pool } = pg;
@@ -10,23 +9,30 @@ try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch { __dirn
 
 const dbDataDir = path.resolve(__dirname, '../../../database/data');
 
-// Determine if we should use network PostgreSQL (pool) or local PGlite
+const isServerless = Boolean(
+  process.env.NETLIFY || 
+  process.env.AWS_LAMBDA_FUNCTION_NAME || 
+  process.env.LAMBDA_TASK_ROOT
+);
+
+const isProduction = env.NODE_ENV === 'production' || Boolean(process.env.RENDER) || Boolean(process.env.VERCEL) || isServerless;
+
 const hasExternalDb = Boolean(
   env.DATABASE_URL &&
   !env.DATABASE_URL.includes('localhost') &&
   !env.DATABASE_URL.includes('127.0.0.1')
 );
-const isProduction = env.NODE_ENV === 'production' || Boolean(process.env.RENDER) || Boolean(process.env.VERCEL);
 
 let activeEngine = (hasExternalDb || isProduction) ? 'pg' : 'pglite';
 let pool = null;
 let pgliteInstance = null;
 
-// Configure SSL properly for Neon / Render / Supabase / AWS
+// SSL required for Supabase / Neon / Render / AWS
 const requiresSSL = Boolean(
   isProduction ||
   hasExternalDb ||
-  (env.DATABASE_URL && env.DATABASE_URL.includes('sslmode=require'))
+  (env.DATABASE_URL && env.DATABASE_URL.includes('sslmode=require')) ||
+  (env.DATABASE_URL && env.DATABASE_URL.includes('supabase.com'))
 );
 
 try {
@@ -34,10 +40,9 @@ try {
     pool = new Pool({
       connectionString: env.DATABASE_URL,
       ssl: requiresSSL ? { rejectUnauthorized: false } : false,
-      max: 10,
-      connectionTimeoutMillis: 5000,
-      idleTimeoutMillis: 10000,
-      keepAlive: true,
+      max: isServerless ? 2 : 10,
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 15000,
     });
 
     pool.on('error', (err) => {
@@ -49,9 +54,10 @@ try {
   pool = null;
 }
 
-// Lazy initialization of PGlite (only used for local development fallback)
-const getPGlite = () => {
+// Lazy dynamic initialization of PGlite (only for local development when not on serverless)
+const getPGlite = async () => {
   if (!pgliteInstance) {
+    const { PGlite } = await import('@electric-sql/pglite');
     pgliteInstance = new PGlite(dbDataDir);
   }
   return pgliteInstance;
@@ -63,7 +69,6 @@ export const query = async (text, params = []) => {
       const res = await pool.query(text, params);
       return res;
     } catch (err) {
-      // If we are in local development and connection was refused, fall back to pglite
       if (!isProduction && !hasExternalDb && (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND')) {
         activeEngine = 'pglite';
         return await query(text, params);
@@ -72,9 +77,9 @@ export const query = async (text, params = []) => {
     }
   }
 
-  // Use persistent PGlite for local development
+  // Fallback to local PGlite (local offline dev only)
   try {
-    const db = getPGlite();
+    const db = await getPGlite();
     const res = await db.query(text, params);
     return res;
   } catch (err) {
