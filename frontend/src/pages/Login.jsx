@@ -30,6 +30,7 @@ const Login = () => {
 
   const [email, setEmail] = useState('admin@guridhis.com');
   const [password, setPassword] = useState('Admin@123');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingRole, setLoadingRole] = useState(null);
   const [error, setError] = useState('');
@@ -43,7 +44,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate(redirectPath, { replace: true });
     } catch (err) {
       setError(
@@ -196,6 +197,8 @@ const Login = () => {
               <label className="flex items-center gap-2 text-slate-600 dark:text-slate-400 cursor-pointer select-none">
                 <input
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded border-slate-300 text-orange-500 focus:ring-orange-500 dark:border-slate-700 dark:bg-slate-800"
                 />
                 <span>{t('remember_me', 'Remember me')}</span>

@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const handleLogout = () => {
     logout();
     if (onClose) onClose();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const handleItemClick = () => {

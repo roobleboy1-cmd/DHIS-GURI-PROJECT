@@ -52,12 +52,18 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      {/* All Application Pages Wrapped in Unified Dashboard Layout */}
-      <Route element={<DashboardLayout />}>
+      {/* All Application Pages Protected - Must Log In to Access System */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         {/* Site root navigates directly to Dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Public Catalog Routes */}
+        {/* Core Catalog Routes */}
         <Route path="/houses" element={<Houses />} />
         <Route path="/houses/:id" element={<HouseDetails />} />
         <Route path="/designs" element={<HouseDesigns />} />

@@ -16,6 +16,9 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageToggle from '../common/LanguageToggle';
+import ThemeToggle from '../common/ThemeToggle';
 import api from '../../api/axios';
 
 const Navbar = () => {
@@ -93,7 +96,13 @@ const Navbar = () => {
           </div>
 
           {/* User Controls / Auth CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5">
+            {/* Language & Theme Controls */}
+            <div className="flex items-center gap-1.5 mr-1">
+              <LanguageToggle showLabel={false} className="py-1 px-2.5 bg-white/10 text-white border-white/20 hover:bg-white/20" />
+              <ThemeToggle className="py-1 px-2.5 bg-white/10 text-white border-white/20 hover:bg-white/20" />
+            </div>
+
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 {/* Client Favorites */}
@@ -231,6 +240,12 @@ const Navbar = () => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-white/10 bg-[#0d2d4f] px-4 pt-3 pb-6 space-y-3">
+          {/* Quick Toggles Row */}
+          <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+            <LanguageToggle className="w-1/2 justify-center py-1.5 text-xs bg-white/10 text-white border-white/20" />
+            <ThemeToggle showLabel className="w-1/2 justify-center py-1.5 text-xs bg-white/10 text-white border-white/20" />
+          </div>
+
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link
