@@ -22,11 +22,18 @@ import ThemeToggle from '../components/common/ThemeToggle';
 import LanguageToggle from '../components/common/LanguageToggle';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { t, isSomali } = useLanguage();
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // If already authenticated, redirect immediately to Dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const [email, setEmail] = useState('admin@guridhis.com');
   const [password, setPassword] = useState('Admin@123');
@@ -35,9 +42,7 @@ const Login = () => {
   const [loadingRole, setLoadingRole] = useState(null);
   const [error, setError] = useState('');
 
-  const redirectPath = new URLSearchParams(location.search).get('redirect') || '/dashboard';
-
-  // Standard form submission
+  // Standard form submission - always goes to Dashboard first
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -45,7 +50,7 @@ const Login = () => {
 
     try {
       await login(email, password, rememberMe);
-      navigate(redirectPath, { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(
         err.message ||
@@ -58,7 +63,7 @@ const Login = () => {
     }
   };
 
-  // Instant 1-Click Auto Login for Role Cards
+  // Instant 1-Click Auto Login for Role Cards - always goes to Dashboard first
   const handleQuickLogin = async (roleEmail, rolePassword, roleKey) => {
     setEmail(roleEmail);
     setPassword(rolePassword);
@@ -68,7 +73,7 @@ const Login = () => {
 
     try {
       await login(roleEmail, rolePassword);
-      navigate(redirectPath, { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(
         err.message ||
