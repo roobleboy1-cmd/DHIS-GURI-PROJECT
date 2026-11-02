@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
+import { useAuth } from './context/AuthContext';
 
 // Fast Loading Spinner for Route Suspense
 const PageLoader = () => (
@@ -14,6 +15,18 @@ const PageLoader = () => (
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+
+// Root Direct Route: When visiting https://guridhis-somalia.netlify.app/
+// If already logged in -> Goes straight to Dashboard
+// If NOT logged in -> Displays Login page directly on root URL without redirect param
+const RootRedirect = () => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <Login />;
+};
 
 // Public Catalog Pages (Lazy loaded)
 const Houses = lazy(() => import('./pages/Houses'));
@@ -47,6 +60,9 @@ function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+      {/* Root Route: Directly opens on root URL (Login if guest, Dashboard if signed in) */}
+      <Route path="/" element={<RootRedirect />} />
+
       {/* Standalone Authentication Pages (Clean center card, no sidebar) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -60,8 +76,6 @@ function App() {
           </ProtectedRoute>
         }
       >
-        {/* Site root navigates directly to Dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Core Catalog Routes */}
         <Route path="/houses" element={<Houses />} />
